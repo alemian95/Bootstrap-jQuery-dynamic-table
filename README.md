@@ -1,6 +1,6 @@
 # Bootstrap-jQuery-dynamic-table
 
-Dynamic table created with jQuery and Bootstrap that allows to display a large amount of items.
+Dynamic table created with jQuery and Bootstrap that allows to display a large amount of items.<br>
 Navitage through all the rows with the navigation buttons, by jumping to a page number, or by searching a specific id.
 
 Main features
@@ -12,5 +12,5 @@ Main features
   - Click on a column head to change sorting
   - Modify the number of rows displayed
 
-Please note
+Please note<br>
   Data in the sql file are meaningless, dataset has been build with randomly with https://www.mockaroo.com/
