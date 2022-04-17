@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Bootsrap JQuery dynamic table</title>
+
+		<!-- jQuery 3.6.0 -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+		<!-- Bootstrap CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+		<!-- Google Icons -->
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+		<!-- Custom Style -->
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap');
+
+			:root {
+				--clr-primary: #0a970a;
+				--clr-dark: #033f03;
+				--clr-light: #8fff8f;
+			}
+
+			body {
+				font-family: 'Montserrat', Verdana, sans-serif;
+			}
+
+			.navbar-my {
+				background: linear-gradient(180deg, var(--clr-dark), var(--clr-primary)) !important;
+				font-weight: bold;
+				margin-bottom: 20px;
+			}
+
+			.navbar-my a {
+				color: var(--clr-light) !important;
+			}
+
+			.table-controls {
+				display: grid;
+				grid-template-rows: max-content;
+				grid-template-areas: "table-start table-back table-title table-forward table-end";
+				margin-top: 25px;
+				margin-bottom: 10px;
+				justify-items: center;
+			}
+
+			.table-control-btn {
+				width: 90%;
+			}
+
+			#table-start, #table-back {
+				justify-self: left;
+			}
+
+			#table-forward, #table-end {
+				justify-self: right;
+			}
+
+			.table-controls-2 {
+				display: grid;
+				grid-template-rows: max-content;
+				grid-template-areas: "page-display goto-page";
+				margin-top: 10px;
+				margin-bottom: 5px;
+				align-items: baseline;
+			}
+
+			#goto-page {
+				width: 50%;
+				justify-self: right;
+			}
+
+			.table-controls-3 {
+				display: grid;
+				grid-template-rows: min-content;
+				grid-template-areas: "rows-count-display search-id";
+				margin-top: 5px;
+				margin-bottom: 25px;
+			}
+
+			#rows-count-display {
+				width: 50%;
+				justify-self: left;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+			}
+
+			#rows-per-page-selector {
+				width: 45%;
+				justify-self: left;
+			}
+
+			#search-id {
+				width: 50%;
+				justify-self: right;
+			}
+
+			#id-col-head {
+				width: 10%;
+			}
+
+			#city-col-head {
+				width: 20%;
+			}
+
+			#btc-address-col-head {
+				width: 40%;
+			}
+
+			#domain-col-head {
+				width: 20%;
+			}
+
+			#value-col-head {
+				width: 10%;
+			}
+
+			.changed {
+				animation-name: flash-changed-value;
+				animation-duration: 3s;
+			}
+
+			@keyframes flash-changed-value {
+				0% {
+					background-color: white;
+					color: black;
+				}
+				10% {
+					background-color: var(--clr-primary);
+					color: white;
+				}
+				75% {
+					background-color: var(--clr-primary);
+					color: white;
+				}
+				100% {
+					background-color: white;
+					color: black;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<nav class="navbar navbar-expand-lg navbar-light bg-light navbar-my">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="#">
+					<img src="https://getbootstrap.com/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
+					Bootstrap JQuery dynamic table
+				</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+					<div class="navbar-nav">
+						<a class="nav-link active" aria-current="page" href="#">Dashboard</a>
+						<a class="nav-link" href="#">List</a>
+						<a class="nav-link" href="#">Options</a>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+
+		<div class="container">
+
+			<div class="table-controls">
+				<button id="table-start" class="btn btn-primary table-control-btn">First</button>
+				<button id="table-back" class="btn btn-primary table-control-btn"><span class="material-icons">arrow_back</span></button>
+				<h3 id="table-title">List of items</h3>
+				<button id="table-forward" class="btn btn-primary table-control-btn"><span class="material-icons">arrow_forward</span></button>
+				<button id="table-end" class="btn btn-primary table-control-btn">Last</button>
+			</div>
+
+			<div class="table-controls-2">
+				
+				<span id="page-display">Page <span id="current-page-display"></span> of <span id="page-count-display"></span></span>
+
+				<div id="goto-page" class="input-group mb-3">
+					<input type="number" class="form-control" id="goto-page-input" placeholder="Page number" value="1" min="1" max="" aria-label="Page number" aria-describedby="goto">
+					<button class="btn btn-primary" type="button" id="goto-page-btn">Go to page</button>
+					<div id="goto-page-inputFeedback" class="invalid-feedback">
+						Value not valid. Please enter a value between 1 and <span id="goto-page-feedback-max-page"></span>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="table-controls-3">
+				<span id="rows-count-display">
+					<select id="rows-per-page-selector" class="form-select rows-select">
+						<option value="10">10</option>
+						<option selected value="20">20</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+						<option value="100">100</option>
+					</select>
+					<span id="row-count-display-tail-text">&nbsp;rows per page</span>
+				</span>
+
+				<div id="search-id" class="input-group mb-3">
+					<input type="number" class="form-control" id="search-id-input" placeholder="ID number">
+					<button class="btn btn-dark" type="button" id="search-id-cancel"><span class="material-icons">close</span></button>
+					<button class="btn btn-primary" type="button" id="search-id-btn">Go to ID</button>
+					<div id="search-id-inputFeedback" class="invalid-feedback">
+						Id not found
+					</div>
+				</div>
+			</div>
+
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th id="id-col-head" class="column-head" scope="col">ID <span id="id-order-marker" class="material-icons">arrow_drop_up</span></th>
+						<th id="city-col-head" class="column-head" scope="col">City <span id="city-order-marker" class="material-icons"></span></th>
+						<th id="btc-address-col-head" class="column-head" scope="col">BTC Address <span id="btc-address-order-marker" class="material-icons"></span></th>
+						<th id="domain-col-head" class="column-head" scope="col">Domain <span id="domain-order-marker" class="material-icons"></span></th>
+						<th id="value-col-head" class="column-head" scope="col">Value <span id="value-order-marker" class="material-icons"></span></th>
+					</tr>
+				</thead>
+				<tbody id="list">
+				</tbody>
+			</table>
+
+		</div>
+
+
+		<div id="edit-modal" class="modal" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Change value for id <span id="edit-modal-id-display"></span></h5>
+						<button id="edit-modal-close-btn" type="button" class="btn close" data-dismiss="modal" aria-label="Close" onclick="$('#edit-modal').modal('hide')">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<label for="edit-modal-input">New value</label>
+						<input type="number" id="edit-modal-input" class="form-control" min="10000" max="99999">
+						<div id="edit-modal-inputFeedback" class="invalid-feedback">
+							Value not valid. Please enter a value between 10000 and 99999
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button id="edit-modal-save-btn" type="button" class="btn btn-primary">Save changes</button>
+						<button id="edit-modal-cancel-btn" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#edit-modal').modal('hide')">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<!-- Bootstrap JS -->
+		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+
+		<!-- Custom JS -->
+		<script type="text/javascript">
+
+			const KEY_ENTER = 13;
+
+			const columnsDB = ['id', 'city', 'btc_address', 'domain', 'value'];
+			const columns = ['id', 'city', 'btc-address', 'domain', 'value'];
+			const orderKeyword = ['asc', 'desc'];
+			const orderMarker = ['arrow_drop_up', 'arrow_drop_down'];
+
+
+			var rowsCount = 0;
+			var rowsPerPage = 20;
+			var page = 0;
+			var pagesCount = 0;
+
+			getRowsCount();
+
+			var orderBy = 0; // order by primary key by default
+			var order = 0; // ascending sorting by default
+
+			var targetid = 0;
+
+			var displayingSearchID = false;
+
+
+			$(document).ready(function(){
+				$('#current-page-display').text(page+1);
+				$('#page-count-display').text(pagesCount);
+				$('#goto-page-feedback-max-page').text(pagesCount);
+				$('#goto-page-input').attr("max", pagesCount);
+				refreshTable();
+			});
+
+			$('#table-start').click(function(){
+				setPage(0);
+			});
+
+			$('#table-end').click(function(){
+				setPage(pagesCount-1);
+			});
+
+			$('#table-back').click(function(){
+				setPage(page-1);
+			});
+
+			$('#table-forward').click(function(){
+				setPage(page+1);
+			});
+
+			// add click event on item goto-page-btn -> activates gotoPageHandler
+			$('#goto-page-btn').click(function(){
+				gotoPageHandler();
+			});
+
+			// add keypress event on item goto-page-input -> activates gotoPageHandler
+			$('#goto-page-input').on('keypress', function(e){
+				if(e.which == KEY_ENTER) {
+					gotoPageHandler();
+				}
+			});
+
+
+			$('#rows-per-page-selector').change(function(){
+				rowsPerPage = $('#rows-per-page-selector').val();
+				pagesCount = Math.ceil(rowsCount / rowsPerPage);
+				$('#page-count-display').text(pagesCount);
+				$('#goto-page-feedback-max-page').text(pagesCount);
+				$('#goto-page-input').attr("max", pagesCount);
+				setPage(0);
+			});
+
+
+			$('#search-id-cancel').click(function(){
+				if(displayingSearchID) {
+					displayingSearchID = false;
+					$('#search-id-input').val("");
+					$('#page-count-display').text(pagesCount);
+					setPage(0);
+				}
+			});
+
+			// add click event on item search-id-btn -> activates function searchIDHandler
+			$('#search-id-btn').click(function(){
+				searchIDHandler();
+			});
+
+			// add keypress event on item search-id-input -> activates function searchIDHandler
+			$('#search-id-input').on('keypress', function(e){
+				if(e.which == KEY_ENTER) {
+					searchIDHandler();
+				}
+			});
+
+
+			// following click events will change the sorting order, we will be able to order by every attribute and in descending or ascending order
+			$('#id-col-head').click(function(){
+				if(orderBy == 0) {
+					toggleOrderMarker();
+				}
+				else {
+					$(`#${columns[orderBy]}-order-marker`).text("");
+					orderBy = 0;
+					$('#id-order-marker').text(orderMarker[order]);
+				}
+				setPage(0);
+			});
+
+			$('#city-col-head').click(function(){
+				if(orderBy == 1) {
+					toggleOrderMarker();
+				}
+				else {
+					$(`#${columns[orderBy]}-order-marker`).text("");
+					orderBy = 1;
+					$('#city-order-marker').text(orderMarker[order]);
+				}
+				setPage(0);
+			});
+
+			$('#btc-address-col-head').click(function(){
+				if(orderBy == 2) {
+					toggleOrderMarker();
+				}
+				else {
+					$(`#${columns[orderBy]}-order-marker`).text("");
+					orderBy = 2;
+					$('#btc-address-order-marker').text(orderMarker[order]);
+				}
+				setPage(0);
+			});
+
+			$('#domain-col-head').click(function(){
+				if(orderBy == 3) {
+					toggleOrderMarker();
+				}
+				else {
+					$(`#${columns[orderBy]}-order-marker`).text("");
+					orderBy = 3;
+					$('#domain-order-marker').text(orderMarker[order]);
+				}
+				setPage(0);
+			});
+
+			$('#value-col-head').click(function(){
+				if(orderBy == 4) {
+					toggleOrderMarker();
+				}
+				else {
+					$(`#${columns[orderBy]}-order-marker`).text("");
+					orderBy = 4;
+					$('#value-order-marker').text(orderMarker[order]);
+				}
+				setPage(0);
+			});
+
+
+			// close edit modal
+			$('#edit-modal-close-btn').click(function(){
+				$('#edit-modal').modal('hide');
+			});
+
+			// close edit modal
+			$('#edit-modal-cancel-btn').click(function(){
+				$('#edit-modal').modal('hide');
+			});
+
+			//add click event on item edit-modal-save-btn -> activates function editModalHandler
+			$('#edit-modal-save-btn').click(function() {
+				editModalHandler();
+			});
+
+			//add keypress event on item edit-modal-input -> activates function editModalHandler
+			$('#edit-modal-input').on('keypress', function(e){
+				if(e.which == KEY_ENTER) {
+					editModalHandler();
+				}
+			});
+
+
+
+			function setPage(n){
+				// quick check if page number is valid
+				if(n < 0 || n >= pagesCount || displayingSearchID) {
+					return;
+				}
+				page = n;
+				$('#current-page-display').text(page+1);
+				$('#goto-page-input').val(page+1);
+				refreshTable();
+			}
+
+			function getRowsCount() {
+				$.ajax({
+					url: 'getcount.php',
+					type: 'get',
+					dataType: 'json',
+					async: false,
+					success: function(response){
+						rowsCount = response.count;
+					},
+					error: function(){
+						console.error("Bad response");
+					},
+					complete: function(){
+						pagesCount = Math.ceil(rowsCount / rowsPerPage);
+					},
+				});
+			}
+		
+			function clearTable() {
+				$('.table-row').remove();
+			}
+
+			function refreshTable() {
+				clearTable();
+				getRows();
+				toggleButtons();
+			}
+
+			function getRows() {
+				const rows = [];
+				$.ajax({
+					url: `getrows.php?limit=${page*rowsPerPage}&rows=${rowsPerPage}&orderby=${columnsDB[orderBy]}&order=${orderKeyword[order]}`,
+					type: 'get',
+					dataType: 'json',
+					success: function(response){
+						response.forEach(e => {
+							addRow(e);
+						});
+					},
+					error: function(){
+						console.error("Bad response");
+					},
+				});
+			}
+
+			function addRow(e) {
+				let row = $('<tr></tr>');
+				row.addClass("table-row");
+				
+				let r_id = $('<th></th>');
+				r_id.text(e.id);
+				r_id.attr("scope", "row");
+				r_id.attr("id", `ID-${e.id}`);
+				row.append(r_id);
+
+				let r_city = $('<td></td>');
+				r_city.text(e.city);
+				row.append(r_city);
+
+				let r_btc = $('<td></td>');
+				r_btc.text(e.btc_address);
+				row.append(r_btc);
+
+				let r_dom = $('<td></td>');
+				r_dom.text(e.domain);
+				row.append(r_dom);
+
+				let r_val = $('<td></td>');
+
+				r_val.attr("title", "Double click to edit");
+				r_val.attr("id", `value-${e.id}`);
+				r_val.text(e.value);
+				row.append(r_val);
+
+				$('#list').on('dblclick', `#value-${e.id}`, function(){
+					openEditModal(e.id, e.value);
+				});
+
+				$('#list').append(row);
+			}
+
+			function toggleButtons() {
+				if(page == 0) {
+					$('#table-back').addClass("disabled");
+					$('#table-start').addClass("disabled");
+				}
+				else {
+					$('#table-back').removeClass("disabled");
+					$('#table-start').removeClass("disabled");
+				}
+
+				if(page == pagesCount - 1) {
+					$('#table-forward').addClass("disabled");
+					$('#table-end').addClass("disabled");
+				}
+				else {
+					$('#table-forward').removeClass("disabled");
+					$('#table-end').removeClass("disabled");
+				}
+			}
+		
+			function gotoPageHandler() {
+				let gotoPage = $('#goto-page-input').val();
+				if(gotoPage < 1 || gotoPage > pagesCount) {
+					$('#goto-page-input').addClass("is-invalid");
+					return;
+				}
+				$('#goto-page-input').removeClass("is-invalid");
+				setPage(gotoPage-1);
+			}
+
+			function searchIDHandler() {
+				let searchID = $('#search-id-input').val();
+				$.ajax({
+					url: `getrow.php?id=${searchID}`,
+					type: 'get',
+					dataType: 'json',
+					success: function(response) {
+						if(response.length != 0) {
+							displayingSearchID = true;
+							$('#current-page-display').text(1);
+							$('#page-count-display').text(1);
+							$('#search-id-input').removeClass("is-invalid");
+							clearTable();
+							addRow(response);
+						}
+						else {
+							$('#search-id-input').addClass("is-invalid");
+						}
+					}
+				});
+			}
+
+			function toggleOrderMarker() {
+				$(`#${columns[orderBy]}-order-marker`).text("");
+				order = (order+1)%2;
+				$(`#${columns[orderBy]}-order-marker`).text(orderMarker[order]);
+			}
+		
+			function openEditModal(id, oldValue) {
+				targetid = id;
+				$('#edit-modal-id-display').text(id);
+				$('#edit-modal-input').val(oldValue);
+				$('#edit-modal').modal('show');
+				$('#edit-modal-input').focus();
+			}
+		
+			function editModalHandler() {
+				let inputValue = $('#edit-modal-input').val();
+				if(inputValue < 10000 || inputValue > 99999) {
+					$('#edit-modal-input').addClass("is-invalid");
+				}
+				else {
+					$('#edit-modal-input').removeClass("is-invalid");
+					let form = new FormData();
+					form.append('id', targetid);
+					form.append('newvalue', inputValue);
+					$.ajax({
+						url: 'updatevalue.php',
+						type: 'post',
+						data: form,
+						dataType: 'json',
+						cache: false,
+						contentType: false,
+						processData: false,
+						success: function(response) {
+							if(response.value) {
+								$('#edit-modal').modal('hide');
+								$(`#value-${targetid}`).text(response.newvalue);
+								$(`#value-${targetid}`).addClass('changed');
+								$(`#value-${targetid}`).unbind();
+							}
+						},
+						error: function() {
+							console.error("Bad response");
+							$('#value-dialog').modal('hide');
+						},
+					});
+					$(`#value-${targetid}`).removeClass('changed');
+					$('#list').on('dblclick', `#value-${targetid}`, function(){
+						openEditModal(targetid, inputValue);
+					});
+				}
+			}
+		</script>
+
+	</body>
+</html>
